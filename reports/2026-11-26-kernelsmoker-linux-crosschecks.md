@@ -18,3 +18,19 @@ These results establish only that the Linux `victory-shader` library test suites
 ## Follow-up
 
 Repeat the hardware dispatch and gameplay A/B checks on a stable Windows or Proton host after confirming that the AvatarManz build can be produced and that the host has no continuing PCIe errors. For PR #10, compare the same saved checkpoint with `VICTORY_DISPATCH_SPLIT=0` and `=1`, using separate shader caches.
+
+## PR #18: wave32 compute thread IDs
+
+Tested PR head `7eda5e3637825d375507f108f9424c7cfdf252e9` in its own worktree. The focused CPU-side selector
+
+```text
+timeout --signal=TERM --kill-after=10s 300s cargo test -p victory-shader --lib wave_ticket_translation_respects_the_group_shape_and_lds_budget --locked --offline -- --test-threads=1 --nocapture
+```
+
+matched **0 tests** (204 filtered). The new `lane_order_tests` module is guarded by `#[cfg(all(test, windows))]`, so this Linux run cannot execute those cases. The complete portable suite
+
+```text
+timeout --signal=TERM --kill-after=10s 300s cargo test -p victory-shader --lib --locked --offline -- --test-threads=1
+```
+
+passed **202 tests, 0 failed, 2 ignored** in 2.63 s, with six Rust warnings. This is a Linux regression check only; the 11-shape dispatch on a 32-lane adapter and gameplay/frame-time checks remain untested here. Repeated correctable PCIe AER events were present, so no GPU workload was run.
